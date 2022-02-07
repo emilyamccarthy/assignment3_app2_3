@@ -1,177 +1,66 @@
-var map = L.map('mapid').setView([38.63868,-90.30317], 12);
+      require(["esri/Map", "esri/layers/CSVLayer", "esri/views/MapView", "esri/widgets/Legend"], (
+        Map,
+        CSVLayer,
+        MapView,
+        Legend
+      ) => {
+        var url = "https://raw.githubusercontent.com/gbrunner/adv-programming-for-gis-and-rs/master/Web%20Development%20Module/Unit%202%20-%20ArcGIS%20JavaScript%20API/stl_crime_wgs_84.csv";
 
-  // load a tile layer
- L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-	maxZoom: 19,
-	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-}).addTo(map);
+        // Paste the url into a browser's address bar to download and view the attributes
+        // in the CSV file. These attributes include:
+        // * mag - magnitude
+        // * type - earthquake or other event such as nuclear test
+        // * place - location of the event
+        // * time - the time of the event
 
-function onEachFeature(feature, layer) {
-  if (feature.properties && feature.properties.popupContent) {
-    layer.bindPopup(feature.properties.popupContent);
-  }
-}
+        const template = {
+					title: "Crime Comitted at {ILEADStreet}"
+				};
 
-var geojsonFeature = {
-  "type": "FeatureCollection",
-  "features": [
-    {
-      "type": "Feature",
-      "properties": {
-        "Name": "Sauce on the Side",
-        "popupContent": "<b>Sauce on the Side</b><br>Great calzones and salads"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -90.2565586566925,
-          38.627172226771336
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "Name": "Seoul  Taco",
-        "popupContent": "<b>Seoul Taco</b><br>Korean-mexican fusion, I love the burritos"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -90.24987995624542,
-          38.628341454584714
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "Name": "U-City Grill",
-        "popupContent": "<b>U-City Grill</b><br>Cash only; delicicous beef bulgogi"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -90.30848622322081,
-          38.65663598042729
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "Name": "801 Chophouse",
-        "popupContent": "<b>801 Chophouse</b><br>Elegant steakhouse"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -90.33247590065001,
-          38.64892763595949
-        ]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "Name": "Charlie Gitto's",
-        "popupContent": "<b>Charlie Gitto's</b><br>Best creme brulee in STL"
-      },
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          -90.27347803115843,
-          38.61791831050015
-        ]
-      }
-    }
-  ]
-};
+				const csvLayer = new CSVLayer({
+					url: url,
+					title: "St. Louis Crime Heatmap",
+					copyright: "St. Loius Police Department",
+					popupTemplate: template
+				});
 
-L.geoJSON(geojsonFeature, {
-  onEachFeature: onEachFeature
-}).addTo(map);
-
-//var feat = L.geoJSON(geojsonFeature).addTo(map);
-
-//feat.bindPopup("help").openPopup();
-
-var myLines = {
-  "type": "FeatureCollection",
-  "features": [
-    {
-      "type": "Feature",
-      "properties": {},
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          [
-            -106.5234375,
-            35.10193405724606
+        csvLayer.renderer = {
+          type: "heatmap",
+          colorStops: [
+            { color: "rgba(63, 40, 102, 0)", ratio: 0 },
+            { color: "#CBEFFD", ratio: 0.083 },
+            { color: "#97dffc", ratio: 0.166 },
+            { color: "#93caf6", ratio: 0.249 },
+            { color: "#8eb5f0", ratio: 0.332 },
+            { color: "#858ae3", ratio: 0.415 },
+            { color: "#7364d2", ratio: 0.498 },
+            { color: "#613dc1", ratio: 0.581 },
+            { color: "#5829a7", ratio: 0.664 },
+            { color: "#4e148c", ratio: 0.747 },
+            { color: "#461177", ratio: 0.83 },
+            { color: "#3d0e61", ratio: 0.913 },
+            { color: "#1F0731", ratio: 1 }
           ],
-          [
-            -106.41357421875,
-            35.37113502280101
-          ],
-          [
-            -106.0400390625,
-            35.567980458012094
-          ],
-          [
-            -105.79833984375,
-            35.69299463209881
-          ],
-          [
-            -105.6005859375,
-            35.47856499535729
-          ],
-          [
-            -105.40283203124999,
-            35.460669951495305
-          ],
-          [
-            -105.09521484375,
-            35.69299463209881
-          ],
-          [
-            -104.83154296875,
-            35.94243575255426
-          ],
-          [
-            -104.74365234375,
-            36.049098959065645
-          ],
-          [
-            -104.6337890625,
-            36.2265501474709
-          ],
-          [
-            -104.6337890625,
-            36.421282443649496
-          ]
-        ]
-      }
-    }
-  ]
-}
+          maxPixelIntensity: 25,
+          minPixelIntensity: 0
+        };
 
-var myStyle = {
-    "color": "#ff7800",
-    "weight": 2,
-    "opacity": 0.65
-};
+        const map = new Map({
+          basemap: "gray-vector",
+          layers: [csvLayer]
+        });
 
-L.geoJSON(myLines, {
-    style: myStyle
-}).addTo(map);
+        const view = new MapView({
+          container: "viewDiv",
+          center: [-90.18373371599399, 38.63049167971384],
+          zoom: 12,
+          map: map
+        });
 
-
-
-L.geoJSON(states, {
-    style: function(feature) {
-        switch (feature.properties.party) {
-            case 'Republican': return {color: "#C8C9C7"};
-            case 'Democrat':   return {color: "#003DA5"};
-        }
-    }
-}).addTo(map);
+        view.ui.add(
+          new Legend({
+            view: view
+          }),
+          "bottom-right"
+        );
+      });
